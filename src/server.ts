@@ -1,13 +1,17 @@
 import express from "express";
 import bodyParser from "body-parser";
+import dotenv from "dotenv";
+import RateLimit from "./middleware/RateLimiting";
+import { Redis } from "@upstash/redis";
 
+dotenv.config();
 const port = process.env.PORT || 5000;
 const app = express();
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get("/", function (req, res) {
+app.get("/", RateLimit as any, function (req, res) {
   res.send("Hello World");
 });
 
