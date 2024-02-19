@@ -2,7 +2,8 @@ import express from "express";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
 import RateLimit from "./middleware/RateLimiting";
-import { Redis } from "@upstash/redis";
+import compression from "compression";
+import responseTime from "response-time";
 
 dotenv.config();
 const port = process.env.PORT || 5000;
@@ -11,7 +12,29 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-app.get("/", RateLimit as any, function (req, res) {
+// *************************************************************
+// ---------------------- Compressor ---------------------------
+// *************************************************************
+
+app.use(
+  compression({
+    filter: (req, res) => {
+      if (req.headers["x-no-compression"]) {
+        return false;
+      }
+
+      return compression.filter(req, res);
+    },
+  })
+);
+
+// *************************************************************
+// ------------------ Response Time ----------------------------
+// *************************************************************
+
+app.use(responseTime());
+
+app.get("/", RateLimit, function (req, res) {
   res.send("Hello World");
 });
 
